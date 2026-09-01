@@ -28,21 +28,38 @@ function syncRangeAndBox(rangeId, boxId) {
   });
 }
 
+function syncIfNotEditing(elementId, value) {
+  const el = byId(elementId);
+  if (document.activeElement === el) {
+    return;
+  }
+  el.value = value;
+}
+
+function eitherFocused(aId, bId) {
+  const active = document.activeElement;
+  return active === byId(aId) || active === byId(bId);
+}
+
 async function refreshState() {
   const state = await api("/api/state");
 
-  byId("host").value = state.config.opta_host;
-  byId("port").value = state.config.opta_port;
-  byId("poll").value = state.config.poll_interval_s;
-  byId("levelMin").value = state.config.level_min;
-  byId("levelMax").value = state.config.level_max;
+  syncIfNotEditing("host", state.config.opta_host);
+  syncIfNotEditing("port", state.config.opta_port);
+  syncIfNotEditing("poll", state.config.poll_interval_s);
+  syncIfNotEditing("levelMin", state.config.level_min);
+  syncIfNotEditing("levelMax", state.config.level_max);
 
   const v1 = state.control.valve1_cmd_mA ?? 4;
   const v2 = state.control.valve2_cmd_mA ?? 20;
-  byId("valve1").value = v1;
-  byId("valve1Box").value = Number(v1).toFixed(2);
-  byId("valve2").value = v2;
-  byId("valve2Box").value = Number(v2).toFixed(2);
+  if (!eitherFocused("valve1", "valve1Box")) {
+    byId("valve1").value = v1;
+    byId("valve1Box").value = Number(v1).toFixed(2);
+  }
+  if (!eitherFocused("valve2", "valve2Box")) {
+    byId("valve2").value = v2;
+    byId("valve2Box").value = Number(v2).toFixed(2);
+  }
 
   byId("i1").textContent = fmt(state.data.i1_mA, 3);
   byId("i2").textContent = fmt(state.data.i2_mA, 3);

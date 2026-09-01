@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = BASE_DIR / "opta_valve_config.json"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "opta_host": "192.168.1.50",
+    "opta_host": "138.232.90.35",
     "opta_port": 80,
     "dashboard_port": 5070,
     "poll_interval_s": 1.0,
@@ -54,6 +54,10 @@ def load_config() -> Dict[str, Any]:
         return dict(DEFAULT_CONFIG)
     try:
         cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        # Migrate the old starter IP to the new default unless the user already customized it.
+        if cfg.get("opta_host") == "192.168.1.50":
+            cfg["opta_host"] = DEFAULT_CONFIG["opta_host"]
+            CONFIG_PATH.write_text(json.dumps(cfg, indent=2, sort_keys=True), encoding="utf-8")
         merged = dict(DEFAULT_CONFIG)
         merged.update(cfg)
         return merged
