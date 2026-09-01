@@ -1,0 +1,130 @@
+:root {
+  --bg: #f4f1ea;
+  --panel: #fff9f1;
+  --ink: #203039;
+  --line: #dbc9ac;
+  --accent: #0d7c66;
+  --accent-weak: #def2ec;
+  --warn: #9b3d2f;
+  --muted: #66727b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: radial-gradient(circle at 5% 0%, rgba(13, 124, 102, 0.17), transparent 28%), linear-gradient(120deg, #f8f2e8, var(--bg));
+}
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 28px rgba(32, 48, 57, 0.08);
+}
+
+.hero h1 { margin: 0 0 8px; }
+.hero p { margin: 0; color: var(--muted); }
+
+.grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.grid.four { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+input[type="range"] {
+  padding: 0;
+  border: none;
+  accent-color: var(--accent);
+  flex: 1 1 220px;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.alt {
+  background: var(--accent-weak);
+  color: #184d43;
+}
+
+button.warn {
+  background: var(--warn);
+}
+
+.metric h3 { margin-top: 0; margin-bottom: 4px; }
+.value { font-size: 2rem; font-weight: 700; }
+.unit, .muted { color: var(--muted); }
+
+.pill {
+  display: inline-block;
+  background: var(--accent-weak);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.error {
+  color: var(--warn);
+}
+
+pre {
+  margin: 0;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}

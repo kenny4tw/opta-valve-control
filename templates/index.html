@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opta Valve Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero card">
+      <h1>Opta Valve Dashboard</h1>
+      <p>Control inlet and outlet valves and monitor all four 4-20 mA inputs.</p>
+      <div class="status-row">
+        <span id="pollState" class="pill">polling</span>
+        <span id="lastPoll">last poll: -</span>
+        <span id="lastError" class="error"></span>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Connection</h2>
+        <label for="host">Opta host</label>
+        <input id="host" type="text" placeholder="192.168.1.50">
+
+        <label for="port">Port</label>
+        <input id="port" type="number" min="1" max="65535" value="80">
+
+        <label for="poll">Poll interval (s)</label>
+        <input id="poll" type="number" step="0.1" min="0.25" value="1.0">
+
+        <div class="row">
+          <button id="saveConnection">Save</button>
+          <button class="alt" id="forceRefresh">Refresh now</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Valve Commands</h2>
+        <label for="valve1">Valve 1 inlet command (mA, 4 = closed, 20 = open)</label>
+        <div class="row">
+          <input id="valve1" type="range" min="4" max="20" step="0.1" value="4">
+          <input id="valve1Box" type="number" min="4" max="20" step="0.1" value="4">
+        </div>
+
+        <label for="valve2">Valve 2 outlet command (mA, safety range 18-20)</label>
+        <div class="row">
+          <input id="valve2" type="range" min="18" max="20" step="0.1" value="20">
+          <input id="valve2Box" type="number" min="18" max="20" step="0.1" value="20">
+        </div>
+
+        <div class="row">
+          <button id="applyValves">Apply valve setpoints</button>
+          <button id="startRun">Start</button>
+          <button class="warn" id="stopRun">Stop</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid four">
+      <article class="card metric">
+        <h3>I1 Valve 1 Feedback</h3>
+        <div class="value" id="i1">-</div>
+        <div class="unit">mA</div>
+      </article>
+      <article class="card metric">
+        <h3>I2 Valve 2 Feedback</h3>
+        <div class="value" id="i2">-</div>
+        <div class="unit">mA</div>
+      </article>
+      <article class="card metric">
+        <h3>I3 Flow</h3>
+        <div class="value" id="flow">-</div>
+        <div class="unit">l/s (0-300)</div>
+        <div class="muted" id="i3">- mA</div>
+      </article>
+      <article class="card metric">
+        <h3>I4 Level</h3>
+        <div class="value" id="level">-</div>
+        <div class="unit">configurable units</div>
+        <div class="muted" id="i4">- mA</div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Level Scaling</h2>
+        <label for="levelMin">Level at 4 mA</label>
+        <input id="levelMin" type="number" step="0.01" value="0">
+        <label for="levelMax">Level at 20 mA</label>
+        <input id="levelMax" type="number" step="0.01" value="100">
+        <div class="row">
+          <button id="saveScale">Save scaling</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>JSON Debug</h2>
+        <pre id="jsonDump">{}</pre>
+      </article>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
