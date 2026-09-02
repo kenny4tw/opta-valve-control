@@ -2,6 +2,8 @@ function byId(id) {
   return document.getElementById(id);
 }
 
+let valveApplyTimer = null;
+
 function fmt(value, digits = 2) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
     return "-";
@@ -47,11 +49,9 @@ async function refreshState() {
   syncIfNotEditing("host", state.config.opta_host);
   syncIfNotEditing("port", state.config.opta_port);
   syncIfNotEditing("poll", state.config.poll_interval_s);
-  syncIfNotEditing("levelMin", state.config.level_min);
-  syncIfNotEditing("levelMax", state.config.level_max);
 
-  const v1 = state.control.valve1_cmd_mA ?? 4;
-  const v2 = state.control.valve2_cmd_mA ?? 20;
+  const v1 = state.control.valve1_cmd_deg ?? 0;
+  const v2 = state.control.valve2_cmd_deg ?? 90;
   if (!eitherFocused("valve1", "valve1Box")) {
     byId("valve1").value = v1;
     byId("valve1Box").value = Number(v1).toFixed(2);
@@ -61,16 +61,32 @@ async function refreshState() {
     byId("valve2Box").value = Number(v2).toFixed(2);
   }
 
-  byId("i1").textContent = fmt(state.data.i1_mA, 3);
-  byId("i2").textContent = fmt(state.data.i2_mA, 3);
+  byId("i1").textContent = fmt(state.data.i1_deg, 2);
+  byId("i2").textContent = fmt(state.data.i2_deg, 2);
+  byId("i1mA").textContent = `${fmt(state.data.i1_mA, 3)} mA`;
+  byId("i2mA").textContent = `${fmt(state.data.i2_mA, 3)} mA`;
   byId("i3").textContent = `${fmt(state.data.i3_mA, 3)} mA`;
   byId("i4").textContent = `${fmt(state.data.i4_mA, 3)} mA`;
   byId("flow").textContent = fmt(state.data.flow_l_s, 2);
-  byId("level").textContent = fmt(state.data.level_value, 2);
+  byId("level").textContent = fmt(state.data.pegel_cm, 2);
 
   byId("pollState").textContent = state.last_error ? "poll error" : "poll ok";
   byId("lastPoll").textContent = `last poll: ${state.last_poll || "-"}`;
   byId("lastError").textContent = state.last_error || "";
+
+  if (document.activeElement !== byId("logName") && !byId("logName").value) {
+    byId("logName").value = state.log_name || "";
+  }
+  const configuredLogDir = state.config.log_dir || "";
+  byId("logFolder").textContent = configuredLogDir
+    ? `Ordner: ${configuredLogDir}`
+    : "Ordner: Standard (./logs)";
+  byId("logState").textContent = `Status: ${state.logging_enabled ? "an" : "aus"}`;
+  const logCard = byId("logCard");
+  logCard.classList.toggle("log-on", !!state.logging_enabled);
+  logCard.classList.toggle("log-off", !state.logging_enabled);
+  byId("logFile").textContent = `Datei: ${state.log_filename || "-"}`;
+
   byId("jsonDump").textContent = JSON.stringify(state, null, 2);
 }
 
@@ -88,28 +104,29 @@ async function saveConnection() {
   await refreshState();
 }
 
-async function saveScale() {
-  await api("/api/config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      level_min: Number(byId("levelMin").value),
-      level_max: Number(byId("levelMax").value),
-    }),
-  });
-  await refreshState();
-}
-
 async function applyValves() {
   await api("/api/valves", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      valve1_cmd_mA: Number(byId("valve1Box").value),
-      valve2_cmd_mA: Number(byId("valve2Box").value),
+      valve1_cmd_deg: Number(byId("valve1Box").value),
+      valve2_cmd_deg: Number(byId("valve2Box").value),
     }),
   });
   await refreshState();
+}
+
+function scheduleValveApply() {
+  if (valveApplyTimer) {
+    clearTimeout(valveApplyTimer);
+  }
+
+  valveApplyTimer = setTimeout(() => {
+    applyValves().catch((err) => {
+      byId("lastError").textContent = String(err);
+    });
+    valveApplyTimer = null;
+  }, 450);
 }
 
 async function setRunState(running) {
@@ -121,15 +138,48 @@ async function setRunState(running) {
   await refreshState();
 }
 
+async function setLogging(enabled) {
+  await api("/api/logging", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      enabled,
+      name: byId("logName").value.trim(),
+    }),
+  });
+  await refreshState();
+}
+
+async function chooseLogFolder() {
+  const result = await api("/api/select-log-folder", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+
+  if (result.cancelled) {
+    return;
+  }
+
+  await refreshState();
+}
+
 function wireUi() {
   syncRangeAndBox("valve1", "valve1Box");
   syncRangeAndBox("valve2", "valve2Box");
 
+  byId("valve1").addEventListener("input", scheduleValveApply);
+  byId("valve1Box").addEventListener("input", scheduleValveApply);
+  byId("valve2").addEventListener("input", scheduleValveApply);
+  byId("valve2Box").addEventListener("input", scheduleValveApply);
+
   byId("saveConnection").addEventListener("click", () => saveConnection().catch(alert));
-  byId("saveScale").addEventListener("click", () => saveScale().catch(alert));
   byId("applyValves").addEventListener("click", () => applyValves().catch(alert));
   byId("startRun").addEventListener("click", () => setRunState(true).catch(alert));
   byId("stopRun").addEventListener("click", () => setRunState(false).catch(alert));
+  byId("chooseLogFolder").addEventListener("click", () => chooseLogFolder().catch(alert));
+  byId("startLog").addEventListener("click", () => setLogging(true).catch(alert));
+  byId("stopLog").addEventListener("click", () => setLogging(false).catch(alert));
   byId("forceRefresh").addEventListener("click", () => refreshState().catch(alert));
 }
 

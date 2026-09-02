@@ -37,21 +37,21 @@
       </article>
 
       <article class="card">
-        <h2>Valve Commands</h2>
-        <label for="valve1">Valve 1 inlet command (mA, 4 = closed, 20 = open)</label>
+        <h2>Klappen Sollwerte</h2>
+        <label for="valve1">Klappe Eingang Sollwert (0° = 4 mA, 90° = 20 mA)</label>
         <div class="row">
-          <input id="valve1" type="range" min="4" max="20" step="0.1" value="4">
-          <input id="valve1Box" type="number" min="4" max="20" step="0.1" value="4">
+          <input id="valve1" type="range" min="0" max="90" step="0.1" value="0">
+          <input id="valve1Box" type="number" min="0" max="90" step="0.1" value="0">
         </div>
 
-        <label for="valve2">Valve 2 outlet command (mA, safety range 18-20)</label>
+        <label for="valve2">Klappe HWE Sollwert (Sicherheitsbereich, min 18 mA)</label>
         <div class="row">
-          <input id="valve2" type="range" min="18" max="20" step="0.1" value="20">
-          <input id="valve2Box" type="number" min="18" max="20" step="0.1" value="20">
+          <input id="valve2" type="range" min="78.8" max="90" step="0.1" value="90">
+          <input id="valve2Box" type="number" min="78.8" max="90" step="0.1" value="90">
         </div>
 
         <div class="row">
-          <button id="applyValves">Apply valve setpoints</button>
+          <button id="applyValves">Sollwerte senden</button>
           <button id="startRun">Start</button>
           <button class="warn" id="stopRun">Stop</button>
         </div>
@@ -60,39 +60,44 @@
 
     <section class="grid four">
       <article class="card metric">
-        <h3>I1 Valve 1 Feedback</h3>
+        <h3>Klappe Eingang</h3>
         <div class="value" id="i1">-</div>
-        <div class="unit">mA</div>
+        <div class="unit">Grad</div>
+        <div class="muted" id="i1mA">- mA</div>
       </article>
       <article class="card metric">
-        <h3>I2 Valve 2 Feedback</h3>
+        <h3>Klappe HWE</h3>
         <div class="value" id="i2">-</div>
-        <div class="unit">mA</div>
+        <div class="unit">Grad</div>
+        <div class="muted" id="i2mA">- mA</div>
       </article>
       <article class="card metric">
-        <h3>I3 Flow</h3>
+        <h3>Q Eingang</h3>
         <div class="value" id="flow">-</div>
-        <div class="unit">l/s (0-300)</div>
+        <div class="unit">l/s (4 mA = 0, 20 mA = 200)</div>
         <div class="muted" id="i3">- mA</div>
       </article>
       <article class="card metric">
-        <h3>I4 Level</h3>
+        <h3>Pegel</h3>
         <div class="value" id="level">-</div>
-        <div class="unit">configurable units</div>
+        <div class="unit">cm (4 mA = 0 cm, 20 mA = 100 cm)</div>
         <div class="muted" id="i4">- mA</div>
       </article>
     </section>
 
     <section class="grid two">
-      <article class="card">
-        <h2>Level Scaling</h2>
-        <label for="levelMin">Level at 4 mA</label>
-        <input id="levelMin" type="number" step="0.01" value="0">
-        <label for="levelMax">Level at 20 mA</label>
-        <input id="levelMax" type="number" step="0.01" value="100">
+      <article class="card log-card log-off" id="logCard">
+        <h2>Datenlogging</h2>
+        <label for="logName">Logname</label>
+        <input id="logName" type="text" placeholder="z.B. versuch_a">
         <div class="row">
-          <button id="saveScale">Save scaling</button>
+          <button class="alt" id="chooseLogFolder">Ordner waehlen</button>
+          <button id="startLog">Logging Start</button>
+          <button class="warn" id="stopLog">Logging Stop</button>
         </div>
+        <div class="muted" id="logFolder">Ordner: Standard (./logs)</div>
+        <div class="muted" id="logState">Status: aus</div>
+        <div class="muted" id="logFile">Datei: -</div>
       </article>
 
       <article class="card">

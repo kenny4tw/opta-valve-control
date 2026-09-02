@@ -4,6 +4,7 @@ This repository contains a complete two-part setup for Arduino Finder Opta + AFX
 
 1. Opta firmware that exposes `/data.json` and `/control.json` over Ethernet.
 2. A laptop dashboard server (Flask) to control valves and display all four 4-20 mA inputs.
+3. An optional desktop EXE launcher to start the dashboard without opening a terminal.
 
 ## Control Rules Implemented
 
@@ -17,10 +18,14 @@ This repository contains a complete two-part setup for Arduino Finder Opta + AFX
   - Command range is clamped to 18-20 mA
 
 - Inputs shown in dashboard:
-  - I1: valve 1 position feedback (mA)
-  - I2: valve 2 position feedback (mA)
-  - I3: flowmeter (mA + converted to 0-300 l/s)
-  - I4: ultrasonic level (mA + converted using configurable 4 mA and 20 mA scaling)
+  - Klappe Eingang (from I1): shown in degrees (4 mA = 0 deg, 20 mA = 90 deg)
+  - Klappe HWE (from I2): shown in degrees (4 mA = 0 deg, 20 mA = 90 deg)
+  - I3: flowmeter (mA + converted to 0-200 l/s)
+  - Pegel (from I4): shown in cm (4 mA = 0 cm, 20 mA = 100 cm)
+
+- Commands shown in dashboard:
+  - Klappe Eingang command in degrees (0-90, internally converted to 4-20 mA)
+  - Klappe HWE command in degrees (safety-clamped equivalent of 18-20 mA)
 
 ## Repository Layout
 
@@ -31,6 +36,8 @@ This repository contains a complete two-part setup for Arduino Finder Opta + AFX
 - `static/app.js`
 - `requirements.txt`
 - `run_dashboard.bat`
+- `dashboard_launcher_gui.py`
+- `build_dashboard_launcher_exe.bat`
 
 ## 1) Flash The Opta Firmware
 
@@ -64,9 +71,51 @@ Then open:
 In the dashboard:
 
 1. Set Opta host/IP and port.
-2. Adjust valve commands.
+2. Adjust valve commands in degrees.
 3. View live I1-I4 values and flow conversion.
-4. Set level scaling (`level_min`, `level_max`) for I4 conversion.
+4. Pegel is always converted as 4 mA = 0 cm and 20 mA = 100 cm.
+5. Start/stop logging from "Datenlogging" and provide a custom log name.
+
+## CSV Logging Format
+
+- Sampling interval: 1 second
+- Output folder: `logs/`
+- Filename: `<name>_YYYY_MM_DD_hh_mm_ss.csv`
+- Row 1: column names
+- Row 2: units
+- Row 3+: data rows
+
+First two columns:
+
+1. `timestamp` with format `YYYY_MM_DD_hh_mm_ss_ms`
+2. `runtime_s` as seconds from logging start
+
+Then data columns for measured and controlled values:
+
+- I1: mA and deg
+- I2: mA and deg
+- I3: mA and l/s (4 mA = 0, 20 mA = 200)
+- I4: mA and cm
+- Command Klappe Eingang: mA and deg
+- Command Klappe HWE: mA and deg
+
+## 3) Build EXE Launcher (No Terminal Needed)
+
+From this repository root, run:
+
+```powershell
+.\build_dashboard_launcher_exe.bat
+```
+
+This creates:
+
+- `dist/OptaValveDashboardLauncher.exe`
+
+When started, the EXE:
+
+1. Starts the dashboard in the background.
+2. Opens a small window with controls.
+3. Shows a clickable link to `http://127.0.0.1:5070`.
 
 ## API Contract
 
@@ -88,6 +137,11 @@ Dashboard server endpoints:
 - `POST /api/config`
 - `POST /api/valves`
 - `POST /api/poll`
+
+`POST /api/valves` accepts degree-based command fields:
+
+- `valve1_cmd_deg` (0-90)
+- `valve2_cmd_deg` (converted and safety-clamped to 18-20 mA equivalent)
 
 ## Notes
 

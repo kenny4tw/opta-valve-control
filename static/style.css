@@ -32,6 +32,16 @@ body {
   box-shadow: 0 8px 28px rgba(32, 48, 57, 0.08);
 }
 
+.log-card.log-on {
+  background: #e9f8e9;
+  border-color: #9bcf9b;
+}
+
+.log-card.log-off {
+  background: #fdeaea;
+  border-color: #e3b3b3;
+}
+
 .hero h1 { margin: 0 0 8px; }
 .hero p { margin: 0; color: var(--muted); }
 

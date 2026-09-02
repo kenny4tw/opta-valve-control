@@ -15,8 +15,10 @@ EthernetServer server(80);
 
 // AFX00007 mapping (adjust if your wiring uses different channels).
 constexpr uint8_t EXPANSION_INDEX = 0;
-constexpr uint8_t VALVE1_OUTPUT_CH = 0;  // O1
-constexpr uint8_t VALVE2_OUTPUT_CH = 1;  // O2
+// Opta analog expansion examples map current DAC outputs to channels 4..7.
+// Using 0..3 for current output can result in no 4-20 mA signal on the module.
+constexpr uint8_t VALVE1_OUTPUT_CH = 4;
+constexpr uint8_t VALVE2_OUTPUT_CH = 7;
 constexpr uint8_t I1_FEEDBACK_CH = 0;    // I1
 constexpr uint8_t I2_FEEDBACK_CH = 1;    // I2
 constexpr uint8_t I3_FLOW_CH = 2;        // I3
@@ -200,7 +202,7 @@ String controlJson() {
 }
 
 String dataJson() {
-  float flowLS = mapCurrent(i3mA, 0.0f, 300.0f);
+  float flowLS = mapCurrent(i3mA, 0.0f, 200.0f);
 
   String json = "{";
   json += "\"i1_mA\":" + String(i1mA, 3);
